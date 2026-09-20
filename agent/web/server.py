@@ -46,12 +46,12 @@ class DeepenRequest(BaseModel):
     model_id: Optional[str] = None
 
 def get_owner_token() -> str:
-    pwd = settings.access_password or "1320"
-    return hashlib.sha256(f"research_owner_salt_{pwd}".encode()).hexdigest()[:32]
+    secret = settings.access_password or "research_owner_default_secret"
+    return hashlib.sha256(f"research_owner_salt_{secret}".encode()).hexdigest()[:32]
 
 def get_guest_token() -> str:
-    pwd = settings.guest_password or "1307"
-    return hashlib.sha256(f"research_guest_salt_{pwd}".encode()).hexdigest()[:32]
+    secret = settings.guest_password or "research_guest_default_secret"
+    return hashlib.sha256(f"research_guest_salt_{secret}".encode()).hexdigest()[:32]
 
 def get_token_role(token: Optional[str]) -> Optional[str]:
     if not token:
@@ -103,7 +103,9 @@ def get_request_role(request: Request) -> str:
     if not token:
         token = request.query_params.get("token", "")
     key = request.query_params.get("key", "") or request.query_params.get("pin", "")
-    if (token and token == get_owner_token()) or key == "1320":
+    if token and token == get_owner_token():
+        return "owner"
+    if settings.access_password and key == settings.access_password:
         return "owner"
     if is_local_request(request):
         return "owner"
@@ -140,15 +142,15 @@ async def health():
 
 @app.post("/api/auth/login")
 async def login(req: LoginRequest):
-    """Authenticate with security PIN (Owner PIN or Guest PIN)."""
+    """Authenticate with security PIN (Owner PIN or Guest PIN) if configured."""
     pin = req.pin.strip()
-    if pin == (settings.access_password or "1320"):
+    if settings.access_password and pin == settings.access_password:
         token = get_owner_token()
         response = JSONResponse(content={"status": "ok", "token": token, "role": "owner"})
         response.delete_cookie(key="research_auth_token", path="/")
         return response
 
-    if pin == (settings.guest_password or "1307"):
+    if settings.guest_password and pin == settings.guest_password:
         token = get_guest_token()
         response = JSONResponse(content={"status": "ok", "token": token, "role": "guest"})
         response.delete_cookie(key="research_auth_token", path="/")
