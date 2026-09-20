@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "research-agent"
+version = "1.0.0"
+description = "Autonomous Deep Research Agent - Local-first, Multi-source, and Easy to Use"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn>=0.28.0",
+    "httpx>=0.27.0",
+    "pydantic>=2.6.0",
+    "pydantic-settings>=2.2.0",
+    "beautifulsoup4>=4.12.0",
+    "rich>=13.7.0",
+    "python-multipart>=0.0.9",
+]
+
+[project.scripts]
+research-agent = "run:main"

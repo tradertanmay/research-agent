@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Research Agent</title>
+    <link rel="stylesheet" href="/static/style.css?v=3">
+    <!-- Marked for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Highlight.js for code blocks -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body>
+    <!-- Security PIN Lock Screen Overlay (Disabled) -->
+    <div class="pin-overlay hidden" id="pinOverlay" style="display: none !important;">
+        <div class="pin-modal">
+            <div class="pin-icon-wrap">
+                <span class="pin-icon">🔒</span>
+            </div>
+            <h2 class="pin-title">Protected Research Agent</h2>
+            <p class="pin-subtitle">Enter your security PIN to access the research dashboard, vault, and reports.</p>
+            <form class="pin-form" id="pinForm">
+                <div class="pin-input-wrap">
+                    <input 
+                        type="password" 
+                        id="pinInput" 
+                        maxlength="12" 
+                        placeholder="Enter PIN..." 
+                        autocomplete="current-password" 
+                        required 
+                    />
+                    <button type="submit" class="btn btn-primary" id="pinUnlockBtn">
+                        <span>Unlock</span>
+                        <span>➔</span>
+                    </button>
+                </div>
+                <div class="pin-error hidden" id="pinError">❌ Incorrect PIN. Please try again.</div>
+            </form>
+            <div class="pin-footer-tip">
+                <span>🛡️ Private session protected by host</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Inquiries / Query Log Modal -->
+    <div class="pin-overlay hidden" id="queriesModalOverlay">
+        <div class="modal-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); width: 92%; max-width: 680px; max-height: 82vh; display: flex; flex-direction: column; box-shadow: 0 25px 60px rgba(0,0,0,0.85); overflow: hidden; padding: 24px; animation: modalPop 0.2s ease-out;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 600; display: flex; align-items: center; gap: 8px; color: var(--text-primary);">
+                    <span>📋</span> Recorded User Questions & Searches
+                </h3>
+                <button type="button" class="icon-btn" id="closeQueriesModalBtn" style="font-size: 1.2rem; cursor: pointer; background: transparent; border: none; color: var(--text-muted); padding: 4px 8px;">✕</button>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.82rem; margin-top: 0; margin-bottom: 14px; line-height: 1.4;">
+                Every research topic and follow-up question asked by visitors or yourself is saved permanently to <code>vault/user_queries.md</code> and <code>vault/user_queries.json</code>.
+            </p>
+            <div id="queriesListContent" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 6px; min-height: 200px;">
+                <div style="text-align: center; color: var(--text-muted); padding: 24px;">Loading recorded inquiries...</div>
+            </div>
+            <div style="margin-top: 14px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                <span id="queriesCountText" style="font-size: 0.8rem; color: var(--text-muted);">0 recorded</span>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-secondary btn-sm" id="refreshQueriesBtn" style="font-size: 0.82rem; padding: 6px 12px;">🔄 Refresh</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="doneQueriesBtn" style="font-size: 0.82rem; padding: 6px 16px;">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-layout">
+        <!-- Sidebar: History Vault -->
+        <aside class="vault-sidebar" id="vaultSidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <span class="icon">📁</span>
+                    <span>Research Vault</span>
+                </div>
+                <button class="icon-btn" id="refreshHistoryBtn" title="Refresh history">🔄</button>
+            </div>
+            <div class="history-list" id="historyList">
+                <div class="empty-state">No saved research sessions yet.</div>
+            </div>
+            <div class="sidebar-footer">
+                <div class="system-status">
+                    <span class="status-dot"></span>
+                    <span id="statusText">System Ready</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Top Navbar -->
+            <header class="navbar">
+                <div class="navbar-left">
+                    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Toggle Vault">☰</button>
+                    <div class="logo">
+                        <span class="logo-icon">⚡</span>
+                        <div class="logo-text">
+                            <h1>DeepResearch Agent</h1>
+                            <span class="logo-tag">Autonomous & Local-First</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="navbar-right">
+                    <div class="model-select-wrapper">
+                        <label for="modelSelect">Engine:</label>
+                        <select id="modelSelect" class="form-select">
+                            <option value="auto">Auto (Best Local Model)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="viewQueriesBtn" title="View Question History" style="font-size:0.8rem; padding: 6px 12px; margin-left: 8px;">📋 Activity Log</button>
+                    <button class="btn btn-secondary btn-sm hidden" id="lockAppBtn" title="Lock Session" style="display: none !important;">🔒 Lock</button>
+                </div>
+            </header>
+
+            <div class="content-scrollable">
+                <!-- Research Launcher Card -->
+                <section class="card launcher-card">
+                    <h2 class="card-title">Initiate New Research</h2>
+                    <p class="card-subtitle">
+                        Enter any topic, question, or technology. The agent will plan search strategies, discover academic & web sources, extract evidence, and synthesize an in-depth cited report.
+                    </p>
+
+                    <form id="researchForm" class="research-form">
+                        <div class="input-group">
+                            <input 
+                                type="text" 
+                                id="topicInput" 
+                                class="topic-input" 
+                                placeholder="e.g. Next-generation solid-state battery chemistries and commercialization hurdles" 
+                                autocomplete="off"
+                                required
+                            />
+                            <button type="submit" id="submitBtn" class="btn btn-primary">
+                                <span class="btn-text">Start Research</span>
+                                <span class="btn-spinner-icon hidden"></span>
+                            </button>
+                        </div>
+
+                        <!-- Quick Sample Topic Suggestions -->
+                        <div class="sample-topics-row">
+                            <span class="sample-label">Try an example:</span>
+                            <button type="button" class="sample-chip" data-topic="Advances in solid-state batteries in 2026">🔋 Solid-State Batteries</button>
+                            <button type="button" class="sample-chip" data-topic="CRISPR prime editing vs base editing mechanisms">🧬 CRISPR Gene Editing</button>
+                            <button type="button" class="sample-chip" data-topic="Rust vs Go for high-throughput distributed systems">⚡ Rust vs Go</button>
+                            <button type="button" class="sample-chip" data-topic="Commercial viability of humanoid robotics in 2026">🤖 Humanoid Robotics</button>
+                        </div>
+
+                        <div class="controls-row">
+                            <!-- Depth Selector -->
+                            <div class="control-group">
+                                <label class="control-label">Research Depth</label>
+                                <div class="segmented-control" id="depthControl">
+                                    <button type="button" class="segment-btn" data-value="quick">⚡ Quick</button>
+                                    <button type="button" class="segment-btn active" data-value="standard">🎯 Standard</button>
+                                    <button type="button" class="segment-btn" data-value="deep">🔬 Deep Dive</button>
+                                </div>
+                            </div>
+
+                            <!-- Source Focus -->
+                            <div class="control-group">
+                                <label class="control-label">Sources Focus</label>
+                                <div class="segmented-control" id="focusControl">
+                                    <button type="button" class="segment-btn active" data-value="all">🌐 All Sources</button>
+                                    <button type="button" class="segment-btn" data-value="academic">🎓 arXiv Papers</button>
+                                    <button type="button" class="segment-btn" data-value="web">📰 Web & News</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Conversational Greeting / Guidance Box -->
+                <section class="card greeting-box hidden" id="greetingBox">
+                    <div class="greeting-header">
+                        <span class="greeting-avatar">🤖</span>
+                        <div>
+                            <h3 class="greeting-title">Autonomous Research Agent</h3>
+                            <p class="greeting-subtitle">How can I help you investigate today?</p>
+                        </div>
+                    </div>
+                    <div class="greeting-body" id="greetingBody"></div>
+                    <div class="greeting-suggestions" id="greetingSuggestions"></div>
+                </section>
+
+                <!-- Live Execution Tracker (Hidden until launched) -->
+                <section class="card execution-tracker hidden" id="executionTracker">
+                    <div class="tracker-header">
+                        <div class="tracker-title">
+                            <div class="research-radar-orbit" title="Autonomous Research Engine Active">
+                                <div class="radar-outer-ring"></div>
+                                <div class="radar-inner-spinner"></div>
+                                <div class="radar-center-core"></div>
+                            </div>
+                            <div class="tracker-title-text">
+                                <div class="tracker-title-line">
+                                    <span>Autonomous Research Progress</span>
+                                    <span class="live-researching-tag">● Live Research Active</span>
+                                </div>
+                                <div class="tracker-substatus" id="trackerSubstatus">Analyzing query, querying arXiv & scanning web indices...</div>
+                            </div>
+                        </div>
+                        <span class="elapsed-badge" id="elapsedBadge">00:00</span>
+                    </div>
+
+                    <!-- Steps Progress Bar -->
+                    <div class="progress-steps">
+                        <div class="step" id="step-planning">
+                            <div class="step-num">1</div>
+                            <div class="step-label">Planning</div>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step" id="step-searching">
+                            <div class="step-num">2</div>
+                            <div class="step-label">Searching</div>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step" id="step-reading">
+                            <div class="step-num">3</div>
+                            <div class="step-label">Reading</div>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step" id="step-synthesizing">
+                            <div class="step-num">4</div>
+                            <div class="step-label">Synthesis</div>
+                        </div>
+                    </div>
+
+                    <!-- Live Activity Log -->
+                    <div class="live-activity-box">
+                        <div class="activity-log" id="activityLog">
+                            <div class="log-entry info">Agent standing by...</div>
+                        </div>
+                    </div>
+
+                    <!-- Discovered Sources Reel -->
+                    <div class="sources-reel hidden" id="sourcesReel">
+                        <h4 class="sources-reel-title">Discovered Evidence Sources (<span id="sourcesCount">0</span>)</h4>
+                        <div class="sources-cards-grid" id="sourcesCardsGrid"></div>
+                    </div>
+                </section>
+
+                <!-- Report Display Section -->
+                <section class="card report-card hidden" id="reportCard">
+                    <div class="report-header">
+                        <div class="report-meta">
+                            <h2 id="reportDisplayTitle">Research Report</h2>
+                            <div class="report-submeta" id="reportSubmeta"></div>
+                        </div>
+                        <div class="report-actions">
+                            <button class="btn btn-secondary" id="copyMdBtn" title="Copy Raw Markdown">📋 Copy</button>
+                            <button class="btn btn-secondary" id="downloadMdBtn" title="Download Markdown File">💾 Save .md</button>
+                            <button class="btn btn-secondary" id="exportHtmlBtn" title="Print to PDF / HTML">🖨️ Export PDF</button>
+                        </div>
+                    </div>
+
+                    <!-- Rendered Report Content -->
+                    <div class="markdown-body" id="markdownBody"></div>
+
+                    <!-- Interactive Q&A and Continuous Research Panel -->
+                    <div class="report-followup-panel" id="reportFollowupPanel">
+                        <div class="followup-header">
+                            <div class="followup-title-wrap">
+                                <span class="followup-badge-icon">💬</span>
+                                <div>
+                                    <h3 class="followup-title">Ask Questions & Continue Research</h3>
+                                    <p class="followup-subtitle">Inquire about findings, clarify concepts, or autonomously research deeper on any aspect of this report.</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Mode Toggle -->
+                            <div class="followup-mode-toggle" id="followupModeToggle">
+                                <button type="button" class="mode-toggle-btn active" data-mode="ask" title="Instant answers based on current report & sources">
+                                    💬 Ask Question
+                                </button>
+                                <button type="button" class="mode-toggle-btn" data-mode="deepen" title="Autonomous new search on arXiv & Web to expand report">
+                                    🔬 Deepen Search
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick suggestion chips based on report -->
+                        <div class="followup-suggestions" id="followupSuggestions">
+                            <button type="button" class="qa-chip" data-q="What are the primary bottlenecks and limitations identified in this research?">⚠️ Key Bottlenecks</button>
+                            <button type="button" class="qa-chip" data-q="Summarize the key findings from the cited arXiv papers and how they compare.">🎓 Summarize arXiv Papers</button>
+                            <button type="button" class="qa-chip" data-q="What are practical, step-by-step implementation recommendations based on these findings?">🛠️ Implementation Path</button>
+                            <button type="button" class="qa-chip" data-q="What are the main open questions or unresolved controversies in this domain?">❓ Open Questions</button>
+                        </div>
+
+                        <!-- Chat Message Thread -->
+                        <div class="followup-thread" id="followupThread">
+                            <div class="thread-placeholder" id="threadPlaceholder">
+                                Ask any question about this report, or choose <b>🔬 Deepen Search</b> to find new papers and append new sections.
+                            </div>
+                        </div>
+
+                        <!-- Input Bar -->
+                        <form class="followup-input-bar" id="followupForm">
+                            <textarea 
+                                id="followupInput" 
+                                rows="1" 
+                                placeholder="Ask a question about this report, or enter a subtopic to research deeper..." 
+                                autocomplete="off"
+                            ></textarea>
+                            <button type="submit" class="btn btn-primary followup-send-btn" id="followupSendBtn">
+                                <span id="followupSendIcon">➤</span>
+                                <span id="followupSendText">Ask</span>
+                            </button>
+                        </form>
+                        <div class="followup-hint">
+                            <span>Tip: Press <b>Enter</b> to send, <b>Shift+Enter</b> for newline. Switch to <b>🔬 Deepen Search</b> to discover new sources.</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/app.js?v=3"></script>
+</body>
+</html>

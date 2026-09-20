@@ -1,0 +1,61 @@
+# Python & Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environment Variables & Secrets
+.env
+!.env.example
+*.pem
+*.key
+
+# Local Research Vault Data (Personal reports & visitor audit logs)
+vault/reports/*
+!vault/reports/.gitkeep
+vault/conversations/*
+!vault/conversations/.gitkeep
+vault/history.json
+vault/user_queries.md
+vault/user_queries.json
+test_report.md
+
+# Operating System & IDE Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs & Temporary Files
+*.log
+scratch/
