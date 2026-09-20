@@ -15,7 +15,7 @@ RESET="\033[0m"
 
 echo -e "${BOLD}${BLUE}"
 echo "========================================================"
-echo "    🚀 Autonomous Research Agent - Easy Installer       "
+echo "    Autonomous Research Agent - Easy Installer          "
 echo "========================================================"
 echo -e "${RESET}"
 
@@ -98,7 +98,7 @@ chmod +x "$SCRIPT_DIR/run.py"
 
 echo ""
 echo -e "${BOLD}${GREEN}========================================================${RESET}"
-echo -e "${BOLD}${GREEN}  🎉 Installation Complete!                            ${RESET}"
+echo -e "${BOLD}${GREEN}  Installation Complete!                               ${RESET}"
 echo -e "${BOLD}${GREEN}========================================================${RESET}"
 echo ""
 echo -e "To start your Research Agent anytime, simply run:"

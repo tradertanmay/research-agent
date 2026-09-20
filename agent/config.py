@@ -28,7 +28,7 @@ class Settings(BaseSettings):
 
     # Server settings
     host: str = "0.0.0.0"
-    port: int = 8000
+    port: int = 8080
     access_password: Optional[str] = None
     guest_password: Optional[str] = None
 

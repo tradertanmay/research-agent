@@ -34,7 +34,7 @@ def print_banner():
 
         console = Console()
         text = Text()
-        text.append("⚡ Autonomous Deep Research Agent\n", style="bold cyan")
+        text.append("Autonomous Deep Research Agent\n", style="bold cyan")
         text.append("Local-First • Multi-Source • Shared Web Interface\n\n", style="dim")
         text.append("• Local Access:   ", style="bold")
         text.append(f"{local_url}\n", style="bold green underline")
@@ -54,9 +54,9 @@ def print_banner():
         print(f"  • Network Share: {lan_url}  (Share on your Wi-Fi!)")
         print("=" * 65)
 
-def get_free_port(preferred_port=8000):
+def get_free_port(preferred_port=8080):
     import socket
-    candidates = [preferred_port, 8080, 8501, 8050, 8888, 9000]
+    candidates = [preferred_port, 8000, 8501, 8050, 8888, 9000]
     for p in candidates:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -87,14 +87,27 @@ def cmd_web(args):
 
     target_url = f"http://127.0.0.1:{settings.port}"
 
-    # Open browser automatically on macOS / cross-platform
+    # Attempt to open browser automatically on desktop environments
     def open_browser():
         import time
-        time.sleep(1.0)
+        time.sleep(1.2)
         try:
-            subprocess.run(["open", target_url], check=False)
+            if sys.platform == "darwin":
+                subprocess.run(["open", target_url], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            elif sys.platform.startswith("win"):
+                try:
+                    os.startfile(target_url)
+                except Exception:
+                    webbrowser.open(target_url)
+            elif sys.platform.startswith("linux"):
+                try:
+                    subprocess.run(["xdg-open", target_url], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                except Exception:
+                    webbrowser.open(target_url)
+            else:
+                webbrowser.open(target_url)
         except Exception:
-            webbrowser.open(target_url)
+            pass
 
     import threading
     threading.Thread(target=open_browser, daemon=True).start()
@@ -218,7 +231,7 @@ def main():
 
     # Web command (default)
     web_parser = subparsers.add_parser("web", help="Start web dashboard (default)")
-    web_parser.add_argument("--port", "-p", type=int, default=None, help="Port to bind (default: 8000 or next free)")
+    web_parser.add_argument("--port", "-p", type=int, default=8080, help="Port to bind (default: 8080 or next free)")
     web_parser.add_argument("--host", "-H", type=str, default="0.0.0.0", help="Host interface (default: 0.0.0.0 for LAN sharing)")
 
     # CLI command

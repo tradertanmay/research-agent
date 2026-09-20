@@ -70,7 +70,7 @@ cd research-agent
 ./start.sh
 ```
 
-Your browser will automatically open to `http://localhost:8080` ready to conduct research.
+The agent will start the server on **`http://localhost:8080`** and automatically open it in your default browser. You can also manually navigate to **`http://localhost:8080`** anytime in any web browser.
 
 ### Windows
 
@@ -82,6 +82,8 @@ cd research-agent
 :: 2. Launch (automatically sets up environment on first run)
 start.bat
 ```
+
+The dashboard will open at **`http://localhost:8080`**.
 
 ---
 

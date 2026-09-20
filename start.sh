@@ -24,7 +24,7 @@ source "$SCRIPT_DIR/.venv/bin/activate"
 if [ "$1" = "test" ]; then
     python3 -m unittest discover -s tests
 elif [ "$1" = "share" ] || [ "$1" = "tunnel" ]; then
-    echo -e "${BOLD}${GREEN}🌐 Starting Public Tunnel for Research Agent...${RESET}"
+    echo -e "${BOLD}${GREEN}Starting Public Tunnel for Research Agent...${RESET}"
     if ! command -v cloudflared >/dev/null 2>&1; then
         echo -e "${YELLOW}cloudflared is not installed.${RESET}"
         echo -e "To share your agent publicly, install cloudflared via 'brew install cloudflared' or visit:"
@@ -36,8 +36,8 @@ elif [ "$1" = "python" ] || [ "$1" = "python3" ]; then
     shift
     python3 "$@"
 elif [ $# -eq 0 ]; then
-    echo -e "${BOLD}${BLUE}🚀 Starting Autonomous Research Agent Dashboard...${RESET}"
-    python3 "$SCRIPT_DIR/run.py" web
+    echo -e "${BOLD}${BLUE}Starting Autonomous Research Agent Dashboard...${RESET}"
+    python3 "$SCRIPT_DIR/run.py" web --port 8080
 else
     python3 "$SCRIPT_DIR/run.py" "$@"
 fi

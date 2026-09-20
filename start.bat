@@ -47,7 +47,7 @@ if not exist ".venv" (
 REM 3. Run Agent
 if "%~1"=="" (
     echo [INFO] Starting Web Dashboard...
-    .venv\Scripts\python.exe run.py web
+    .venv\Scripts\python.exe run.py web --port 8080
 ) else (
     .venv\Scripts\python.exe run.py %*
 )
