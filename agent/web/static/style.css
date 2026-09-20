@@ -1660,3 +1660,60 @@ body {
         flex-direction: column;
     }
 }
+
+/* Informative LLM Setup Notice Banner */
+.ollama-notice-banner {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.ollama-notice-banner.hidden {
+    display: none;
+}
+
+.ollama-notice-text {
+    font-size: 0.88rem;
+    color: #92400e;
+    line-height: 1.5;
+}
+
+.ollama-notice-text strong {
+    color: #78350f;
+}
+
+.ollama-notice-text a {
+    color: #b45309;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.ollama-notice-text code {
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    font-family: var(--font-mono);
+    color: #92400e;
+}
+
+.btn-link-action {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--primary);
+    text-decoration: underline;
+    cursor: pointer;
+    vertical-align: baseline;
+}
+
+.btn-link-action:hover {
+    color: var(--primary-dark);
+}
+

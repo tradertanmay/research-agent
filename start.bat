@@ -41,6 +41,8 @@ if not exist ".venv" (
     if not exist "vault\reports" mkdir vault\reports
     if not exist "vault\conversations" mkdir vault\conversations
     echo [OK] Setup complete!
+    echo [NOTE] To run free local AI: install Ollama from https://ollama.com and run 'ollama pull llama3.2'.
+    echo [NOTE] Or skip Ollama and add your API key in the web dashboard Settings modal.
     echo.
 )
 

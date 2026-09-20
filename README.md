@@ -38,19 +38,24 @@ Before installing, make sure you have:
   - **Linux (Ubuntu/Debian)**: `sudo apt update && sudo apt install python3 python3-venv python3-pip`
   - **Windows**: Download from [python.org](https://www.python.org/downloads/) *(Check "Add Python to PATH" during install)*
 
-### 2. Model Provider (Choice of Free Local or Cloud)
-- **Option A — Free Local LLM (Recommended)**:
-  1. Download and install [Ollama](https://ollama.com).
-  2. Pull a recommended model:
+### 2. Model Provider (Choice of Free Local AI or Cloud AI)
+
+You can choose either 100% free local AI (via Ollama) or cloud AI:
+
+- **Option A — Free Local AI with Ollama (Recommended)**:
+  1. **Install Ollama**:
+     - **macOS**: `brew install ollama` or download from [ollama.com](https://ollama.com)
+     - **Linux**: `curl -fsSL https://ollama.com/install.sh | sh`
+     - **Windows**: Download the installer from [ollama.com](https://ollama.com)
+  2. **Download the default fast model** (~2 GB):
      ```bash
-     ollama pull llama3.2       # Fast & lightweight (default)
-     # OR
-     ollama pull deepseek-r1    # Exceptional reasoning
-     # OR
-     ollama pull qwen2.5:7b     # High instruction accuracy
+     ollama pull llama3.2
      ```
-- **Option B — Cloud Models (Optional)**:
-  - Configure Google Gemini, OpenAI, Groq, or OpenRouter directly inside the Web UI Settings modal, or add keys to `.env`.
+     *(Optional alternatives: `ollama pull deepseek-r1` for reasoning, or `ollama pull qwen2.5:7b`)*
+
+- **Option B — Cloud AI (Zero Local Installs or Downloads Required)**:
+  - If you do not want to install Ollama or download large model files, you can skip Ollama completely.
+  - Simply launch the app, click the **Settings** button in the dashboard header, and enter a free **Google Gemini** API key (or OpenAI, Groq, or OpenRouter key). Research will execute immediately in the cloud.
 
 ---
 

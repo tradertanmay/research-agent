@@ -80,15 +80,19 @@ echo -e "${BLUE}▶ Checking local LLM (Ollama) status...${RESET}"
 if curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
     MODELS_COUNT=$(curl -s http://localhost:11434/api/tags | grep -o '"name"' | wc -l | tr -d ' ')
     if [ "$MODELS_COUNT" -gt 0 ]; then
-        echo -e "${GREEN}✓ Ollama is running with ${MODELS_COUNT} local model(s) available!${RESET}"
+        echo -e "${GREEN}✓ Ollama is online with ${MODELS_COUNT} local model(s) available!${RESET}"
     else
-        echo -e "${YELLOW}ℹ Ollama is running, but no models are installed yet.${RESET}"
-        echo -e "  Recommended: Run 'ollama pull llama3.2' or 'ollama pull deepseek-r1' to get started."
+        echo -e "${YELLOW}Notice: Ollama is running, but no model is downloaded yet.${RESET}"
+        echo -e "  To download the fast default model, run:"
+        echo -e "    ${BOLD}ollama pull llama3.2${RESET}"
     fi
 else
-    echo -e "${YELLOW}ℹ Note: Ollama is not currently running on localhost:11434.${RESET}"
-    echo -e "  • For 100% free local research: Download Ollama from https://ollama.com and run 'ollama pull llama3.2'"
-    echo -e "  • Or for cloud models: Add your OpenAI/Gemini/Anthropic/Groq API key into .env"
+    echo -e "${YELLOW}Notice: Ollama is not currently detected on localhost:11434.${RESET}"
+    echo -e "  If you want 100% free local AI:"
+    echo -e "    1. Install Ollama: https://ollama.com (or 'brew install ollama' on Mac)"
+    echo -e "    2. Download model: ollama pull llama3.2"
+    echo -e "  If you prefer cloud AI (Gemini, OpenAI, Groq):"
+    echo -e "    • You can skip Ollama! Just click 'Settings' in the web UI to paste your API key."
 fi
 
 # 5. Make start.sh executable

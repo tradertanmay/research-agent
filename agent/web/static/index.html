@@ -219,6 +219,15 @@
             </header>
 
             <div class="content-scrollable">
+                <!-- Informational guidance banner when Ollama/LLM is offline -->
+                <div id="ollamaNoticeBanner" class="ollama-notice-banner hidden">
+                    <div class="ollama-notice-inner">
+                        <div class="ollama-notice-text">
+                            <strong>AI Engine Setup:</strong> To run 100% free locally, download <a href="https://ollama.com" target="_blank" rel="noopener">Ollama</a> and run <code>ollama pull llama3.2</code> in your terminal. Or click <button type="button" class="btn-link-action" id="noticeOpenSettingsBtn">Settings</button> to configure a cloud API key (Google Gemini, OpenAI, Groq).
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Research Launcher Card -->
                 <section class="card launcher-card">
                     <h2 class="card-title">Initiate New Research</h2>

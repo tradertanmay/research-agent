@@ -359,16 +359,25 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    const ollamaNoticeBanner = document.getElementById("ollamaNoticeBanner");
+    const noticeOpenSettingsBtn = document.getElementById("noticeOpenSettingsBtn");
+    if (noticeOpenSettingsBtn) {
+        noticeOpenSettingsBtn.addEventListener("click", () => {
+            if (typeof showSettingsModal === "function") showSettingsModal();
+        });
+    }
+
     async function loadModels() {
         try {
             const res = await authFetch("/api/models");
             const data = await res.json();
             if (data.models && data.models.length > 0) {
+                if (ollamaNoticeBanner) ollamaNoticeBanner.classList.add("hidden");
                 modelSelect.innerHTML = "";
                 // Auto option
                 const autoOpt = document.createElement("option");
                 autoOpt.value = "auto";
-                autoOpt.textContent = "Auto (Best Local Model)";
+                autoOpt.textContent = "Auto (Best Available Engine)";
                 modelSelect.appendChild(autoOpt);
 
                 data.models.forEach(m => {
@@ -378,6 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     modelSelect.appendChild(opt);
                 });
             } else {
+                if (ollamaNoticeBanner) ollamaNoticeBanner.classList.remove("hidden");
                 modelSelect.innerHTML = `<option value="auto">No Models Detected (Click Settings to Configure)</option>`;
             }
         } catch (err) {

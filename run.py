@@ -218,7 +218,7 @@ def cmd_check(args):
         if len(models) > 5:
             table.add_row("  ↳ ...", "[dim]More[/dim]", f"+{len(models)-5} more models")
     else:
-        table.add_row("Ollama Service", "[yellow]Offline[/yellow]", "Start with 'ollama serve' or provide cloud API keys")
+        table.add_row("Ollama Service", "[yellow]Offline[/yellow]", "Install: https://ollama.com & 'ollama pull llama3.2' (or use Settings modal)")
 
     # 3. Vault directory
     table.add_row("Storage Vault", "[green]Ready[/green]", str(settings.reports_dir))
