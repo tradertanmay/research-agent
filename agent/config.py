@@ -17,6 +17,11 @@ class Settings(BaseSettings):
     anthropic_api_key: Optional[str] = None
     openrouter_api_key: Optional[str] = None
 
+    # Custom / OpenAI-Compatible Endpoint (LM Studio, vLLM, LocalAI, etc.)
+    custom_llm_url: Optional[str] = None
+    custom_llm_model: Optional[str] = None
+    custom_llm_api_key: Optional[str] = "not-needed"
+
     # Storage settings
     vault_dir: Path = PROJECT_ROOT / "vault"
     reports_dir: Path = PROJECT_ROOT / "vault" / "reports"

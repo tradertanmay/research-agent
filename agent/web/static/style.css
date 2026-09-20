@@ -80,10 +80,42 @@ body {
 }
 
 .sidebar-title {
-    font-size: 0.96rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: var(--text-primary);
     letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.vault-count-badge {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.icon-btn-subtle {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.icon-btn-subtle:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
 }
 
 .history-list {

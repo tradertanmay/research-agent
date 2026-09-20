@@ -151,6 +151,48 @@ Output:
 
 ---
 
+## 🧠 How to Add Other Models Easily
+
+The agent supports **any local or cloud model** with zero friction:
+
+### Method 1: Local Ollama Models (100% Free & Auto-Discovered)
+Any model you download with Ollama is **automatically detected and displayed** in the Web UI Engine dropdown:
+```bash
+ollama pull llama3.2          # Fast 3B model (Default, runs on any laptop)
+ollama pull deepseek-r1:8b    # High-reasoning model for complex synthesis
+ollama pull qwen2.5:14b       # Exceptional coding and technical accuracy
+ollama pull mistral           # Reliable 7B generalist model
+ollama pull phi4              # Microsoft's 14B model
+```
+*No config files to edit. Just pull the model, and it immediately appears in your dashboard!*
+
+### Method 2: Cloud APIs (OpenAI, Gemini, Groq, OpenRouter)
+Add your API key to `.env`:
+```env
+# Google Gemini (Free tier available)
+GEMINI_API_KEY=your_gemini_key
+
+# OpenAI (GPT-4o, GPT-4o-mini)
+OPENAI_API_KEY=your_openai_key
+
+# Groq (Llama 3.3 70B @ 300+ tokens/second)
+GROQ_API_KEY=your_groq_key
+
+# OpenRouter (Access Claude 3.5 Sonnet, DeepSeek R1, etc.)
+OPENROUTER_API_KEY=your_openrouter_key
+```
+The agent automatically enables these models in the engine selector when keys are present.
+
+### Method 3: Custom Local Endpoints (LM Studio, vLLM, LocalAI)
+If you run models via LM Studio, vLLM, or text-generation-webui:
+```env
+CUSTOM_LLM_URL=http://localhost:1234/v1
+CUSTOM_LLM_MODEL=my-model
+CUSTOM_LLM_API_KEY=not-needed
+```
+
+---
+
 ## ⚙️ Configuration (`.env`)
 
 Create a `.env` file (or copy `.env.example`) to customize settings:
@@ -164,12 +206,15 @@ DEFAULT_MODEL=auto
 OPENAI_API_KEY=
 GEMINI_API_KEY=
 GROQ_API_KEY=
-ANTHROPIC_API_KEY=
 OPENROUTER_API_KEY=
 
+# Custom / OpenAI-Compatible Server (LM Studio, vLLM)
+CUSTOM_LLM_URL=
+CUSTOM_LLM_MODEL=
+
 # Web Server Settings
-HOST=127.0.0.1
-PORT=8000
+HOST=0.0.0.0
+PORT=8080
 ```
 
 ---

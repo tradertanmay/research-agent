@@ -112,24 +112,19 @@ def get_request_role(request: Request) -> str:
     return "guest"
 
 @app.middleware("http")
-async def auth_middleware(request: Request, call_next):
+async def app_middleware(request: Request, call_next):
     path = request.url.path
-    # Allow public endpoints
-    if not path.startswith("/api") or path.startswith("/api/auth") or path == "/api/health":
-        return await call_next(request)
 
-    if settings.access_password:
+    # Check access_password authentication if configured
+    if settings.access_password and path.startswith("/api") and not (path.startswith("/api/auth") or path == "/api/health"):
         token = request.headers.get("Authorization", "").replace("Bearer ", "").strip()
         if not token:
             token = request.query_params.get("token", "")
-
         if not verify_token(token):
             return JSONResponse(status_code=401, content={"detail": "Authentication required. Invalid or missing security PIN."})
 
-@app.middleware("http")
-async def no_cache_static_middleware(request: Request, call_next):
     response = await call_next(request)
-    if request.url.path.startswith("/static/") or request.url.path == "/":
+    if path.startswith("/static/") or path == "/":
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"

@@ -310,6 +310,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderHistory(items) {
+        const vaultCountBadge = document.getElementById("vaultCountBadge");
+        if (vaultCountBadge) {
+            vaultCountBadge.innerText = (items && items.length) ? items.length : 0;
+        }
+
         if (!items || items.length === 0) {
             historyList.innerHTML = '<div class="empty-state">No saved research sessions yet.</div>';
             return;

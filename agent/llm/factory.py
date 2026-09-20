@@ -46,6 +46,16 @@ async def list_available_models() -> List[Dict[str, Any]]:
             {"id": "openrouter:auto", "name": "OpenRouter (Auto)", "provider": "openrouter", "local": False, "badge": "Cloud"}
         )
 
+    if settings.custom_llm_url or os.getenv("CUSTOM_LLM_URL"):
+        custom_model = settings.custom_llm_model or os.getenv("CUSTOM_LLM_MODEL", "custom-model")
+        results.append({
+            "id": f"custom:{custom_model}",
+            "name": f"Custom: {custom_model}",
+            "provider": "custom",
+            "local": True,
+            "badge": "Custom API",
+        })
+
     return results
 
 def get_llm_client(model_id: Optional[str] = None) -> BaseLLMClient:
@@ -98,6 +108,17 @@ def get_llm_client(model_id: Optional[str] = None) -> BaseLLMClient:
             api_key=api_key,
             base_url="https://openrouter.ai/api/v1",
             provider_name="openrouter",
+        )
+
+    if target.startswith("custom:"):
+        model_name = target.replace("custom:", "", 1)
+        api_key = settings.custom_llm_api_key or os.getenv("CUSTOM_LLM_API_KEY", "not-needed")
+        base_url = settings.custom_llm_url or os.getenv("CUSTOM_LLM_URL", "http://localhost:1234/v1")
+        return OpenAICompatClient(
+            model_name=model_name,
+            api_key=api_key,
+            base_url=base_url,
+            provider_name="custom",
         )
 
     # Default to Ollama with the provided string as model name
