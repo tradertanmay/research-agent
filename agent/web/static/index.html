@@ -66,6 +66,104 @@
         </div>
     </div>
 
+    <!-- Model & API Settings Modal -->
+    <div class="pin-overlay hidden" id="settingsModalOverlay">
+        <div class="modal-card" style="max-width: 620px;">
+            <div class="modal-card-header">
+                <h3 class="modal-card-title">Model Providers & API Settings</h3>
+                <button type="button" class="close-btn" id="closeSettingsModalBtn" title="Close">Close</button>
+            </div>
+            <p class="modal-card-subtitle">
+                Configure cloud AI models and custom local endpoints. API keys are saved locally in your private <code>.env</code> file and are never hardcoded in code or pushed to git.
+            </p>
+            <div class="modal-card-body" style="gap: 16px; min-height: unset;">
+                <!-- Cloud Providers Group -->
+                <div class="settings-group-card">
+                    <div class="settings-group-title">Cloud AI Providers</div>
+                    
+                    <!-- Gemini -->
+                    <div class="settings-row">
+                        <div class="settings-row-label">
+                            <label for="inputGeminiKey">Google Gemini API</label>
+                            <span class="settings-status-tag" id="statusTagGemini">Not Configured</span>
+                        </div>
+                        <div class="settings-row-input">
+                            <input type="password" id="inputGeminiKey" class="form-input" placeholder="AIzaSy... (free tier at ai.google.dev)" autocomplete="off" />
+                            <button type="button" class="btn btn-secondary btn-xs" id="clearGeminiBtn" title="Clear key">Clear</button>
+                        </div>
+                    </div>
+
+                    <!-- OpenAI -->
+                    <div class="settings-row">
+                        <div class="settings-row-label">
+                            <label for="inputOpenAIKey">OpenAI API</label>
+                            <span class="settings-status-tag" id="statusTagOpenAI">Not Configured</span>
+                        </div>
+                        <div class="settings-row-input">
+                            <input type="password" id="inputOpenAIKey" class="form-input" placeholder="sk-proj-... (platform.openai.com)" autocomplete="off" />
+                            <button type="button" class="btn btn-secondary btn-xs" id="clearOpenAIBtn" title="Clear key">Clear</button>
+                        </div>
+                    </div>
+
+                    <!-- Groq -->
+                    <div class="settings-row">
+                        <div class="settings-row-label">
+                            <label for="inputGroqKey">Groq API (Llama 3.3 70B Fast)</label>
+                            <span class="settings-status-tag" id="statusTagGroq">Not Configured</span>
+                        </div>
+                        <div class="settings-row-input">
+                            <input type="password" id="inputGroqKey" class="form-input" placeholder="gsk_... (console.groq.com)" autocomplete="off" />
+                            <button type="button" class="btn btn-secondary btn-xs" id="clearGroqBtn" title="Clear key">Clear</button>
+                        </div>
+                    </div>
+
+                    <!-- OpenRouter -->
+                    <div class="settings-row">
+                        <div class="settings-row-label">
+                            <label for="inputOpenRouterKey">OpenRouter API</label>
+                            <span class="settings-status-tag" id="statusTagOpenRouter">Not Configured</span>
+                        </div>
+                        <div class="settings-row-input">
+                            <input type="password" id="inputOpenRouterKey" class="form-input" placeholder="sk-or-... (openrouter.ai)" autocomplete="off" />
+                            <button type="button" class="btn btn-secondary btn-xs" id="clearOpenRouterBtn" title="Clear key">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Local Endpoint Group -->
+                <div class="settings-group-card">
+                    <div class="settings-group-title">Custom Local Server (LM Studio, vLLM, LocalAI)</div>
+                    <div class="settings-row">
+                        <div class="settings-row-label">
+                            <label for="inputCustomUrl">Endpoint URL</label>
+                            <span class="settings-status-tag" id="statusTagCustom">Optional</span>
+                        </div>
+                        <div class="settings-row-input">
+                            <input type="text" id="inputCustomUrl" class="form-input" placeholder="e.g. http://localhost:1234/v1" autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <div class="settings-row-label">
+                            <label for="inputCustomModel">Model Name</label>
+                        </div>
+                        <div class="settings-row-input">
+                            <input type="text" id="inputCustomModel" class="form-input" placeholder="e.g. llama-3.3-70b-instruct" autocomplete="off" />
+                        </div>
+                    </div>
+                </div>
+
+                <div id="settingsFeedback" class="settings-feedback hidden"></div>
+            </div>
+            <div class="modal-card-footer">
+                <span class="modal-count-text">Never write keys in code. UI saves safely to local .env</span>
+                <div class="modal-footer-actions">
+                    <button type="button" class="btn btn-secondary btn-sm" id="cancelSettingsBtn">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="saveSettingsBtn">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="app-layout">
         <!-- Sidebar: History Vault -->
         <aside class="vault-sidebar" id="vaultSidebar">
@@ -115,6 +213,7 @@
                         </select>
                     </div>
                     <button class="btn btn-secondary btn-sm" id="viewQueriesBtn" title="View Question History">Activity Log</button>
+                    <button class="btn btn-secondary btn-sm" id="settingsBtn" title="Model Providers & API Settings">Settings</button>
                     <button class="btn btn-secondary btn-sm hidden" id="lockAppBtn" title="Lock Session" style="display: none !important;">Lock</button>
                 </div>
             </header>

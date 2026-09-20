@@ -47,3 +47,42 @@ settings = Settings()
 # Ensure vault directories exist
 settings.vault_dir.mkdir(parents=True, exist_ok=True)
 settings.reports_dir.mkdir(parents=True, exist_ok=True)
+
+def save_api_keys(updates: dict) -> None:
+    """Persist API keys and custom model settings to .env and update in-memory settings."""
+    env_path = PROJECT_ROOT / ".env"
+    lines = []
+    if env_path.exists():
+        with open(env_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+
+    existing_keys = set()
+    new_lines = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped and not stripped.startswith("#") and "=" in stripped:
+            k, v = stripped.split("=", 1)
+            k = k.strip()
+            if k in updates:
+                if updates[k]:
+                    new_lines.append(f"{k}={updates[k]}\n")
+                existing_keys.add(k)
+                continue
+        new_lines.append(line)
+
+    for k, v in updates.items():
+        if k not in existing_keys and v:
+            new_lines.append(f"{k}={v}\n")
+
+    with open(env_path, "w", encoding="utf-8") as f:
+        f.writelines(new_lines)
+
+    # Update in-memory settings and os.environ
+    for k, v in updates.items():
+        attr_name = k.lower()
+        if hasattr(settings, attr_name):
+            setattr(settings, attr_name, v if v else None)
+        if v:
+            os.environ[k] = v
+        elif k in os.environ:
+            del os.environ[k]

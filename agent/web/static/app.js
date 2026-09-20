@@ -75,12 +75,15 @@ document.addEventListener("DOMContentLoaded", () => {
         userRole = role || "guest";
         sessionStorage.setItem("research_user_role", userRole);
         const viewQueriesBtn = document.getElementById("viewQueriesBtn");
+        const settingsBtn = document.getElementById("settingsBtn");
         const modelSelectWrapper = document.querySelector(".model-select-wrapper");
         if (userRole === "guest") {
             if (viewQueriesBtn) viewQueriesBtn.classList.add("hidden");
+            if (settingsBtn) settingsBtn.classList.add("hidden");
             if (modelSelectWrapper) modelSelectWrapper.classList.add("hidden");
         } else {
             if (viewQueriesBtn) viewQueriesBtn.classList.remove("hidden");
+            if (settingsBtn) settingsBtn.classList.remove("hidden");
             if (modelSelectWrapper) modelSelectWrapper.classList.remove("hidden");
         }
     }
@@ -1106,6 +1109,253 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             queriesListContent.innerHTML = `<div style="text-align: center; color: #ef4444; padding: 24px;">Failed to load activity logs: ${escapeHtml(err.message)}</div>`;
         }
+    }
+
+    // --- Model Providers & API Settings Modal ---
+    const settingsBtn = document.getElementById("settingsBtn");
+    const settingsModalOverlay = document.getElementById("settingsModalOverlay");
+    const closeSettingsModalBtn = document.getElementById("closeSettingsModalBtn");
+    const cancelSettingsBtn = document.getElementById("cancelSettingsBtn");
+    const saveSettingsBtn = document.getElementById("saveSettingsBtn");
+
+    const inputGeminiKey = document.getElementById("inputGeminiKey");
+    const inputOpenAIKey = document.getElementById("inputOpenAIKey");
+    const inputGroqKey = document.getElementById("inputGroqKey");
+    const inputOpenRouterKey = document.getElementById("inputOpenRouterKey");
+    const inputCustomUrl = document.getElementById("inputCustomUrl");
+    const inputCustomModel = document.getElementById("inputCustomModel");
+
+    const statusTagGemini = document.getElementById("statusTagGemini");
+    const statusTagOpenAI = document.getElementById("statusTagOpenAI");
+    const statusTagGroq = document.getElementById("statusTagGroq");
+    const statusTagOpenRouter = document.getElementById("statusTagOpenRouter");
+    const statusTagCustom = document.getElementById("statusTagCustom");
+
+    const clearGeminiBtn = document.getElementById("clearGeminiBtn");
+    const clearOpenAIBtn = document.getElementById("clearOpenAIBtn");
+    const clearGroqBtn = document.getElementById("clearGroqBtn");
+    const clearOpenRouterBtn = document.getElementById("clearOpenRouterBtn");
+
+    const settingsFeedback = document.getElementById("settingsFeedback");
+
+    let keysToClear = {
+        gemini: false,
+        openai: false,
+        groq: false,
+        openrouter: false,
+    };
+
+    function showSettingsModal() {
+        if (settingsModalOverlay) {
+            settingsModalOverlay.classList.remove("hidden");
+            loadSettingsKeys();
+        }
+    }
+
+    function hideSettingsModal() {
+        if (settingsModalOverlay) {
+            settingsModalOverlay.classList.add("hidden");
+            if (settingsFeedback) {
+                settingsFeedback.className = "settings-feedback hidden";
+                settingsFeedback.innerText = "";
+            }
+        }
+    }
+
+    if (settingsBtn) settingsBtn.addEventListener("click", showSettingsModal);
+    if (closeSettingsModalBtn) closeSettingsModalBtn.addEventListener("click", hideSettingsModal);
+    if (cancelSettingsBtn) cancelSettingsBtn.addEventListener("click", hideSettingsModal);
+
+    async function loadSettingsKeys() {
+        keysToClear = { gemini: false, openai: false, groq: false, openrouter: false };
+        if (inputGeminiKey) inputGeminiKey.value = "";
+        if (inputOpenAIKey) inputOpenAIKey.value = "";
+        if (inputGroqKey) inputGroqKey.value = "";
+        if (inputOpenRouterKey) inputOpenRouterKey.value = "";
+
+        try {
+            const res = await authFetch("/api/settings/keys");
+            if (!res.ok) return;
+            const data = await res.json();
+
+            // Gemini
+            if (data.gemini && data.gemini.configured) {
+                if (statusTagGemini) {
+                    statusTagGemini.innerText = `Configured (${data.gemini.masked})`;
+                    statusTagGemini.classList.add("active");
+                }
+                if (inputGeminiKey) inputGeminiKey.placeholder = "Configured. Enter new key to replace...";
+            } else {
+                if (statusTagGemini) {
+                    statusTagGemini.innerText = "Not Configured";
+                    statusTagGemini.classList.remove("active");
+                }
+                if (inputGeminiKey) inputGeminiKey.placeholder = "AIzaSy... (free tier at ai.google.dev)";
+            }
+
+            // OpenAI
+            if (data.openai && data.openai.configured) {
+                if (statusTagOpenAI) {
+                    statusTagOpenAI.innerText = `Configured (${data.openai.masked})`;
+                    statusTagOpenAI.classList.add("active");
+                }
+                if (inputOpenAIKey) inputOpenAIKey.placeholder = "Configured. Enter new key to replace...";
+            } else {
+                if (statusTagOpenAI) {
+                    statusTagOpenAI.innerText = "Not Configured";
+                    statusTagOpenAI.classList.remove("active");
+                }
+                if (inputOpenAIKey) inputOpenAIKey.placeholder = "sk-proj-... (platform.openai.com)";
+            }
+
+            // Groq
+            if (data.groq && data.groq.configured) {
+                if (statusTagGroq) {
+                    statusTagGroq.innerText = `Configured (${data.groq.masked})`;
+                    statusTagGroq.classList.add("active");
+                }
+                if (inputGroqKey) inputGroqKey.placeholder = "Configured. Enter new key to replace...";
+            } else {
+                if (statusTagGroq) {
+                    statusTagGroq.innerText = "Not Configured";
+                    statusTagGroq.classList.remove("active");
+                }
+                if (inputGroqKey) inputGroqKey.placeholder = "gsk_... (console.groq.com)";
+            }
+
+            // OpenRouter
+            if (data.openrouter && data.openrouter.configured) {
+                if (statusTagOpenRouter) {
+                    statusTagOpenRouter.innerText = `Configured (${data.openrouter.masked})`;
+                    statusTagOpenRouter.classList.add("active");
+                }
+                if (inputOpenRouterKey) inputOpenRouterKey.placeholder = "Configured. Enter new key to replace...";
+            } else {
+                if (statusTagOpenRouter) {
+                    statusTagOpenRouter.innerText = "Not Configured";
+                    statusTagOpenRouter.classList.remove("active");
+                }
+                if (inputOpenRouterKey) inputOpenRouterKey.placeholder = "sk-or-... (openrouter.ai)";
+            }
+
+            // Custom LLM
+            if (data.custom) {
+                if (inputCustomUrl) inputCustomUrl.value = data.custom.url || "";
+                if (inputCustomModel) inputCustomModel.value = data.custom.model || "";
+                if (statusTagCustom) {
+                    if (data.custom.configured) {
+                        statusTagCustom.innerText = "Active";
+                        statusTagCustom.classList.add("active");
+                    } else {
+                        statusTagCustom.innerText = "Optional";
+                        statusTagCustom.classList.remove("active");
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("Failed to load settings:", err);
+        }
+    }
+
+    function setupClearButton(btn, tag, input, providerKey) {
+        if (!btn) return;
+        btn.addEventListener("click", () => {
+            keysToClear[providerKey] = true;
+            if (input) {
+                input.value = "";
+                input.placeholder = "Marked for removal. Click 'Save Settings' to confirm.";
+            }
+            if (tag) {
+                tag.innerText = "Will be removed";
+                tag.classList.remove("active");
+            }
+        });
+    }
+
+    setupClearButton(clearGeminiBtn, statusTagGemini, inputGeminiKey, "gemini");
+    setupClearButton(clearOpenAIBtn, statusTagOpenAI, inputOpenAIKey, "openai");
+    setupClearButton(clearGroqBtn, statusTagGroq, inputGroqKey, "groq");
+    setupClearButton(clearOpenRouterBtn, statusTagOpenRouter, inputOpenRouterKey, "openrouter");
+
+    if (saveSettingsBtn) {
+        saveSettingsBtn.addEventListener("click", async () => {
+            const payload = {};
+
+            // Gemini
+            if (keysToClear.gemini) {
+                payload.gemini_api_key = "";
+            } else if (inputGeminiKey && inputGeminiKey.value.trim()) {
+                payload.gemini_api_key = inputGeminiKey.value.trim();
+            }
+
+            // OpenAI
+            if (keysToClear.openai) {
+                payload.openai_api_key = "";
+            } else if (inputOpenAIKey && inputOpenAIKey.value.trim()) {
+                payload.openai_api_key = inputOpenAIKey.value.trim();
+            }
+
+            // Groq
+            if (keysToClear.groq) {
+                payload.groq_api_key = "";
+            } else if (inputGroqKey && inputGroqKey.value.trim()) {
+                payload.groq_api_key = inputGroqKey.value.trim();
+            }
+
+            // OpenRouter
+            if (keysToClear.openrouter) {
+                payload.openrouter_api_key = "";
+            } else if (inputOpenRouterKey && inputOpenRouterKey.value.trim()) {
+                payload.openrouter_api_key = inputOpenRouterKey.value.trim();
+            }
+
+            // Custom LLM URL & Model
+            if (inputCustomUrl) {
+                payload.custom_llm_url = inputCustomUrl.value.trim();
+            }
+            if (inputCustomModel) {
+                payload.custom_llm_model = inputCustomModel.value.trim();
+            }
+
+            saveSettingsBtn.disabled = true;
+            saveSettingsBtn.innerText = "Saving...";
+
+            try {
+                const res = await authFetch("/api/settings/keys", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.detail || "Failed to save settings.");
+                }
+
+                if (settingsFeedback) {
+                    settingsFeedback.className = "settings-feedback success";
+                    settingsFeedback.innerText = "Settings saved successfully! Updating model choices...";
+                    settingsFeedback.classList.remove("hidden");
+                }
+
+                // Refresh models dropdown
+                await loadModels();
+
+                setTimeout(() => {
+                    hideSettingsModal();
+                    saveSettingsBtn.disabled = false;
+                    saveSettingsBtn.innerText = "Save Settings";
+                }, 1000);
+            } catch (err) {
+                if (settingsFeedback) {
+                    settingsFeedback.className = "settings-feedback error";
+                    settingsFeedback.innerText = err.message || "Failed to save settings.";
+                    settingsFeedback.classList.remove("hidden");
+                }
+                saveSettingsBtn.disabled = false;
+                saveSettingsBtn.innerText = "Save Settings";
+            }
+        });
     }
 
     function escapeHtml(str) {

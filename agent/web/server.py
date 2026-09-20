@@ -1,3 +1,4 @@
+import os
 import asyncio
 import json
 import uuid
@@ -9,7 +10,7 @@ from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, Fil
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from agent.config import settings
+from agent.config import settings, save_api_keys
 from agent.llm.factory import list_available_models
 from agent.core.research_agent import ResearchAgent
 from agent.core.report_qa import ReportQAEngine
@@ -44,6 +45,15 @@ class DeepenRequest(BaseModel):
     question: str
     focus: str = "all"
     model_id: Optional[str] = None
+
+class SettingsKeysUpdate(BaseModel):
+    gemini_api_key: Optional[str] = None
+    openai_api_key: Optional[str] = None
+    groq_api_key: Optional[str] = None
+    openrouter_api_key: Optional[str] = None
+    custom_llm_url: Optional[str] = None
+    custom_llm_model: Optional[str] = None
+    custom_llm_api_key: Optional[str] = None
 
 def get_owner_token() -> str:
     secret = settings.access_password or "research_owner_default_secret"
@@ -185,6 +195,77 @@ async def get_models(request: Request):
         return {"models": []}
     models = await list_available_models()
     return {"models": models}
+
+def mask_key(k: Optional[str]) -> str:
+    if not k:
+        return ""
+    if len(k) <= 8:
+        return "••••••••"
+    return f"{k[:4]}••••{k[-4:]}"
+
+@app.get("/api/settings/keys")
+async def get_settings_keys(request: Request):
+    """Retrieve masked configuration status for LLM providers (Owner only)."""
+    role = get_request_role(request)
+    if role != "owner":
+        raise HTTPException(status_code=403, detail="Owner privileges required to view API settings.")
+
+    gemini_k = settings.gemini_api_key or os.getenv("GEMINI_API_KEY", "")
+    openai_k = settings.openai_api_key or os.getenv("OPENAI_API_KEY", "")
+    groq_k = settings.groq_api_key or os.getenv("GROQ_API_KEY", "")
+    openrouter_k = settings.openrouter_api_key or os.getenv("OPENROUTER_API_KEY", "")
+    custom_url = settings.custom_llm_url or os.getenv("CUSTOM_LLM_URL", "")
+    custom_model = settings.custom_llm_model or os.getenv("CUSTOM_LLM_MODEL", "")
+
+    return {
+        "gemini": {
+            "configured": bool(gemini_k),
+            "masked": mask_key(gemini_k),
+        },
+        "openai": {
+            "configured": bool(openai_k),
+            "masked": mask_key(openai_k),
+        },
+        "groq": {
+            "configured": bool(groq_k),
+            "masked": mask_key(groq_k),
+        },
+        "openrouter": {
+            "configured": bool(openrouter_k),
+            "masked": mask_key(openrouter_k),
+        },
+        "custom": {
+            "configured": bool(custom_url),
+            "url": custom_url or "",
+            "model": custom_model or "",
+        },
+    }
+
+@app.post("/api/settings/keys")
+async def update_settings_keys(req: SettingsKeysUpdate, request: Request):
+    """Persist updated API keys and custom model endpoints to .env (Owner only)."""
+    role = get_request_role(request)
+    if role != "owner":
+        raise HTTPException(status_code=403, detail="Owner privileges required to update API settings.")
+
+    updates = {}
+    if req.gemini_api_key is not None:
+        updates["GEMINI_API_KEY"] = req.gemini_api_key.strip()
+    if req.openai_api_key is not None:
+        updates["OPENAI_API_KEY"] = req.openai_api_key.strip()
+    if req.groq_api_key is not None:
+        updates["GROQ_API_KEY"] = req.groq_api_key.strip()
+    if req.openrouter_api_key is not None:
+        updates["OPENROUTER_API_KEY"] = req.openrouter_api_key.strip()
+    if req.custom_llm_url is not None:
+        updates["CUSTOM_LLM_URL"] = req.custom_llm_url.strip()
+    if req.custom_llm_model is not None:
+        updates["CUSTOM_LLM_MODEL"] = req.custom_llm_model.strip()
+    if req.custom_llm_api_key is not None:
+        updates["CUSTOM_LLM_API_KEY"] = req.custom_llm_api_key.strip()
+
+    save_api_keys(updates)
+    return {"status": "ok", "message": "Settings updated successfully"}
 
 @app.post("/api/research")
 async def start_research(req: ResearchRequest, background_tasks: BackgroundTasks, request: Request):

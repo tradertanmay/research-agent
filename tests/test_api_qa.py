@@ -63,5 +63,39 @@ class TestAPIQA(unittest.TestCase):
         )
         self.assertEqual(res.status_code, 400)
 
+    def test_settings_keys_access_and_update(self):
+        # 1. Remote guest request is rejected
+        res_guest_get = self.client.get("/api/settings/keys", headers={"CF-Connecting-IP": "198.51.100.1"})
+        self.assertEqual(res_guest_get.status_code, 403)
+
+        res_guest_post = self.client.post("/api/settings/keys", json={"gemini_api_key": "fake_key"}, headers={"CF-Connecting-IP": "198.51.100.1"})
+        self.assertEqual(res_guest_post.status_code, 403)
+
+        # 2. Local owner request succeeds
+        res_owner_get = self.client.get("/api/settings/keys")
+        self.assertEqual(res_owner_get.status_code, 200)
+        data = res_owner_get.json()
+        self.assertIn("gemini", data)
+        self.assertIn("openai", data)
+        self.assertIn("groq", data)
+        self.assertIn("openrouter", data)
+        self.assertIn("custom", data)
+
+        # 3. Local owner can update keys
+        res_owner_post = self.client.post("/api/settings/keys", json={
+            "custom_llm_url": "http://localhost:1234/v1",
+            "custom_llm_model": "test-model-42",
+        })
+        self.assertEqual(res_owner_post.status_code, 200)
+
+        # Verify custom model is reflected in models list
+        models_res = self.client.get("/api/models")
+        self.assertEqual(models_res.status_code, 200)
+        model_ids = [m["id"] for m in models_res.json().get("models", [])]
+        self.assertIn("custom:test-model-42", model_ids)
+
+        # Clean up custom model
+        self.client.post("/api/settings/keys", json={"custom_llm_url": "", "custom_llm_model": ""})
+
 if __name__ == "__main__":
     unittest.main()
