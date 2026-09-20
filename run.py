@@ -60,6 +60,11 @@ def get_free_port(preferred_port=8000):
     for p in candidates:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                try:
+                    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+                except (AttributeError, OSError):
+                    pass
                 s.bind(("127.0.0.1", p))
                 return p
         except OSError:
