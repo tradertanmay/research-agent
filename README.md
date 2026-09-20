@@ -2,6 +2,7 @@
 
 > An autonomous, local-first research agent designed for in-depth topic investigation, academic synthesis, document cross-referencing, and evidence-grounded report generation.
 
+[![Status: Alpha](https://img.shields.io/badge/Status-Alpha-amber.svg)](#)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Local First](https://img.shields.io/badge/Inference-100%25%20Local%20Ollama-orange.svg)](https://ollama.com)
