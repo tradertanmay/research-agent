@@ -28,9 +28,13 @@ MANIFEST
 
 # Environment Variables & Secrets
 .env
+.env.*
+*.env
 !.env.example
 *.pem
 *.key
+*.cert
+*.crt
 
 # Local Research Vault Data (Personal reports & visitor audit logs)
 vault/reports/*
