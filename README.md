@@ -59,7 +59,7 @@ Before installing, make sure you have:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/research-agent.git
+git clone https://github.com/tradertanmay/research-agent.git
 cd research-agent
 
 # 2. Run the automated installer
@@ -75,7 +75,7 @@ Your browser will automatically open to `http://localhost:8080` ready to conduct
 
 ```cmd
 :: 1. Clone the repository
-git clone https://github.com/your-username/research-agent.git
+git clone https://github.com/tradertanmay/research-agent.git
 cd research-agent
 
 :: 2. Launch (automatically sets up environment on first run)
