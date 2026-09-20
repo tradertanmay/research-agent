@@ -181,7 +181,11 @@ def cmd_check(args):
     table.add_column("Details", style="dim")
 
     # 1. Python version
-    table.add_row("Python", "[green]OK[/green]", sys.version.split()[0])
+    py_ver = sys.version.split()[0]
+    if sys.version_info >= (3, 10):
+        table.add_row("Python", "[green]OK[/green]", f"{py_ver} (>= 3.10 satisfied)")
+    else:
+        table.add_row("Python", "[red]Outdated[/red]", f"{py_ver} (Python 3.10+ required)")
 
     # 2. Ollama connectivity
     ollama_ok = False

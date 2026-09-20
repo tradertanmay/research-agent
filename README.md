@@ -144,11 +144,12 @@ Output:
 +----------------+-----------+-------------------------------------------------+
 | Component      | Status    | Details                                         |
 +----------------+-----------+-------------------------------------------------+
-| Python         | OK        | 3.12.x                                          |
+| Python         | OK        | 3.12.x (>= 3.10 satisfied)                      |
 | Ollama Service | Online    | 16 local models detected                        |
 | Storage Vault  | Ready     | ./vault/reports                                 |
 +----------------+-----------+-------------------------------------------------+
 ```
+*(Note: Any installed Python version 3.10 or higher will pass with `Status: OK`)*
 
 ---
 
