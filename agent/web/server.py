@@ -126,14 +126,25 @@ async def auth_middleware(request: Request, call_next):
         if not verify_token(token):
             return JSONResponse(status_code=401, content={"detail": "Authentication required. Invalid or missing security PIN."})
 
-    return await call_next(request)
+@app.middleware("http")
+async def no_cache_static_middleware(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/static/") or request.url.path == "/":
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
 
 @app.get("/")
 async def root():
     """Serve main web interface."""
     index_path = STATIC_DIR / "index.html"
     if index_path.exists():
-        return FileResponse(str(index_path))
+        response = FileResponse(str(index_path))
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
     return HTMLResponse("<h1>Research Agent Web UI</h1><p>Static files missing.</p>")
 
 @app.get("/api/health")
