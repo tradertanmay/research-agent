@@ -377,6 +377,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     opt.textContent = `${m.name} (${m.badge})`;
                     modelSelect.appendChild(opt);
                 });
+            } else {
+                modelSelect.innerHTML = `<option value="auto">No Models Detected (Click Settings to Configure)</option>`;
             }
         } catch (err) {
             console.error("Failed to load models:", err);

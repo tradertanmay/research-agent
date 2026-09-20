@@ -24,8 +24,8 @@ class OllamaClient(BaseLLMClient):
         models = await self.list_models()
         if not models:
             raise RuntimeError(
-                f"No local Ollama models found at {self.base_url}. "
-                "Please run 'ollama pull llama3.1' or 'ollama pull qwen2.5:7b'."
+                f"No AI engine found. Either download Ollama from https://ollama.com and run 'ollama pull llama3.2', "
+                "or click 'Settings' in the dashboard header to add a free API key (e.g. Google Gemini)."
             )
 
         # Preference priority for fast & high quality research
