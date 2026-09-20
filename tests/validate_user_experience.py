@@ -17,7 +17,17 @@ from agent.config import settings
 from agent.storage.vault import vault
 from agent.core.research_agent import ResearchAgent
 
-BASE_URL = "http://127.0.0.1:8501"
+def get_base_url():
+    for port in [8501, 8080, 8000]:
+        try:
+            r = httpx.get(f"http://127.0.0.1:{port}/api/health", timeout=1.0)
+            if r.status_code == 200:
+                return f"http://127.0.0.1:{port}"
+        except Exception:
+            continue
+    return "http://127.0.0.1:8501"
+
+BASE_URL = get_base_url()
 
 def validate_api_endpoints():
     print("\n" + "=" * 60)
@@ -104,12 +114,12 @@ async def validate_sse_stream():
                 if ev_type == "phase_start":
                     phase = data_json.get("phase")
                     received_phases.append(phase)
-                    print(f"    ↳ Stream event received: Phase -> {phase.upper()}")
+                    print(f"    - Stream event received: Phase -> {phase.upper()}")
                 elif ev_type == "synthesis_chunk":
                     received_chunks += 1
                 elif ev_type == "complete":
                     is_completed = True
-                    print(f"    ↳ Stream event received: COMPLETE!")
+                    print(f"    - Stream event received: COMPLETE")
                     break
 
         assert "planning" in received_phases, "Missing planning phase"
@@ -138,12 +148,12 @@ def validate_vault_and_report_quality():
     print(f"  [PASS] Markdown saved at: {latest.get('filepath')}")
 
 def main():
-    print("🚀 Running Comprehensive User Experience Validation...")
+    print("Running Comprehensive User Experience Validation...")
     validate_api_endpoints()
     asyncio.run(validate_sse_stream())
     validate_vault_and_report_quality()
     print("\n" + "=" * 60)
-    print("  🎉 ALL USER EXPERIENCE VALIDATIONS PASSED SUCCESSFULLY!")
+    print("  ALL USER EXPERIENCE VALIDATIONS PASSED SUCCESSFULLY")
     print("=" * 60)
 
 if __name__ == "__main__":

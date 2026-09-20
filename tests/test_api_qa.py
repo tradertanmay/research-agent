@@ -24,6 +24,7 @@ class TestAPIQA(unittest.TestCase):
         conv_file = vault.conversations_dir / "test_qa_rep.json"
         if conv_file.exists():
             conv_file.unlink()
+        vault._save_history([i for i in vault._load_history() if i.get("id") != "test_qa_rep"])
 
     def test_zero_friction_access(self):
         # 1. Accessing report conversation without token succeeds

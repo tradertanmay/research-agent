@@ -45,7 +45,7 @@ class ResearchSynthesizer:
         lines = ["## References & Annotated Sources\n"]
         for idx, src in enumerate(sources, 1):
             author_str = f" *({', '.join(src.authors)})*" if src.authors else ""
-            date_str = f" — *{src.published_date}*" if src.published_date else ""
+            date_str = f" - *{src.published_date}*" if src.published_date else ""
             badge = f" `[{src.source.upper()}]`"
             clean_snippet = src.snippet.replace("\n", " ")[:140].strip()
             
@@ -55,9 +55,9 @@ class ResearchSynthesizer:
                 pdf_url = src.url.replace("/abs/", "/pdf/")
                 if not pdf_url.endswith(".pdf"):
                     pdf_url += ".pdf"
-                pdf_link = f" • [[📄 PDF]]({pdf_url})"
+                pdf_link = f" | [[PDF]]({pdf_url})"
             elif "arxiv.org/pdf/" in src.url:
-                pdf_link = f" • [[📄 PDF]]({src.url})"
+                pdf_link = f" | [[PDF]]({src.url})"
 
             lines.append(f"[{idx}] [{src.title}]({src.url}){badge}{pdf_link}{author_str}{date_str}\n   > {clean_snippet}...")
         return "\n\n".join(lines)

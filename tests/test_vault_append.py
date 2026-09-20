@@ -43,7 +43,7 @@ class TestVaultAppend(unittest.TestCase):
         self.assertEqual(updated["sources_count"], 2)
         self.assertIn("Deep Dive Addendum: Detailed Limitations", updated["content"])
         self.assertIn("Paper 2", updated["content"])
-        self.assertIn("[📄 PDF]", updated["content"])
+        self.assertIn("[[PDF]]", updated["content"])
 
     def test_conversation_persistence(self):
         self.vault.save_conversation("conv123", [

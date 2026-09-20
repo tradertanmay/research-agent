@@ -231,7 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!currentReport || !currentReport.content) return;
         navigator.clipboard.writeText(currentReport.content).then(() => {
             const originalText = copyMdBtn.innerText;
-            copyMdBtn.innerText = "✓ Copied!";
+            copyMdBtn.innerText = "Copied";
             setTimeout(() => copyMdBtn.innerText = originalText, 2000);
         });
     });
@@ -276,7 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Auto option
                 const autoOpt = document.createElement("option");
                 autoOpt.value = "auto";
-                autoOpt.textContent = "⚡ Auto (Best Local Ollama)";
+                autoOpt.textContent = "Auto (Best Local Model)";
                 modelSelect.appendChild(autoOpt);
 
                 data.models.forEach(m => {
@@ -390,7 +390,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         const dateStr = report.created_at ? new Date(report.created_at).toLocaleString() : "";
         const sourcesCount = (report.sources || []).length || report.sources_count || 0;
-        reportSubmeta.innerText = `Engine: ${report.model || 'auto'} • Date: ${dateStr} • ${sourcesCount} Sources Cited`;
+        reportSubmeta.innerText = `Engine: ${report.model || 'auto'} | Date: ${dateStr} | ${sourcesCount} Sources Cited`;
 
         markdownBody.innerHTML = marked.parse(report.content || "");
 
@@ -488,7 +488,7 @@ document.addEventListener("DOMContentLoaded", () => {
             case "plan_complete":
                 addLog(`Plan generated: ${event.plan.sub_questions.length} sub-questions formulated.`, "success");
                 if (event.plan.sub_questions) {
-                    event.plan.sub_questions.forEach(q => addLog(`  • ${q}`, "info"));
+                    event.plan.sub_questions.forEach(q => addLog(`  - ${q}`, "info"));
                 }
                 break;
 
@@ -557,7 +557,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const btn = document.createElement("button");
                 btn.type = "button";
                 btn.className = "suggestion-btn";
-                btn.innerText = `🔍 ${topic}`;
+                btn.innerText = topic;
                 btn.addEventListener("click", () => {
                     topicInput.value = topic;
                     startResearch(topic);
@@ -628,19 +628,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!sub) return;
         switch (phase) {
             case "planning":
-                sub.innerText = "⚡ Planning search angles, formulating sub-questions & hypotheses...";
+                sub.innerText = "Planning search angles, formulating sub-questions and hypotheses...";
                 break;
             case "searching":
-                sub.innerText = "🌐 Querying arXiv preprints, academic repositories & DuckDuckGo...";
+                sub.innerText = "Querying arXiv preprints, academic repositories and web sources...";
                 break;
             case "reading":
-                sub.innerText = "📖 Crawling full web pages & extracting dense evidence...";
+                sub.innerText = "Crawling web pages and extracting dense evidence...";
                 break;
             case "synthesizing":
-                sub.innerText = "✍️ Synthesizing evidence, grounding citations & drafting report...";
+                sub.innerText = "Synthesizing evidence, grounding citations and drafting report...";
                 break;
             case "complete":
-                sub.innerText = "✅ Autonomous research cycle complete! Report generated.";
+                sub.innerText = "Research cycle complete. Report generated.";
                 break;
             default:
                 sub.innerText = "Autonomous research engine active...";
@@ -697,7 +697,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (busy) {
             if (spinner) spinner.classList.remove("hidden");
             if (text) text.innerText = "Researching...";
-            if (statusText) statusText.innerText = "⚡ Researching...";
+            if (statusText) statusText.innerText = "Researching...";
             if (statusDot) statusDot.classList.add("busy");
         } else {
             if (spinner) spinner.classList.add("hidden");
@@ -743,7 +743,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const placeholder = document.createElement("div");
         placeholder.className = "thread-placeholder";
         placeholder.id = "threadPlaceholder";
-        placeholder.innerHTML = "Ask any question about this report, or choose <b>🔬 Deepen Search</b> to find new papers and append new sections.";
+        placeholder.innerHTML = "Ask any question about this report, or choose <b>Deepen Search</b> to find new papers and append new sections.";
         followupThread.appendChild(placeholder);
     }
 
@@ -757,11 +757,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (currentFollowupMode === "ask") {
                     followupInput.placeholder = "Ask a question about this report (findings, arXiv papers, limitations)...";
                     followupSendText.innerText = "Ask";
-                    followupSendIcon.innerText = "💬";
+                    followupSendIcon.innerText = "";
                 } else {
                     followupInput.placeholder = "Enter a subtopic to search deeper on arXiv & Web (e.g. 'verification floor algorithms')...";
                     followupSendText.innerText = "Deepen";
-                    followupSendIcon.innerText = "🔬";
+                    followupSendIcon.innerText = "";
                 }
                 followupInput.focus();
             });
@@ -912,12 +912,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const userMsg = document.createElement("div");
         userMsg.className = "chat-msg user";
-        userMsg.innerHTML = `<div class="chat-msg-header">Deep Research Request</div><div class="chat-msg-content">🔬 Deepen Research: <b>${escapeHtml(query)}</b></div>`;
+        userMsg.innerHTML = `<div class="chat-msg-header">Deep Research Request</div><div class="chat-msg-content">Deepen Research: <b>${escapeHtml(query)}</b></div>`;
         followupThread.appendChild(userMsg);
 
         const statusMsg = document.createElement("div");
         statusMsg.className = "chat-msg status";
-        statusMsg.innerHTML = `<span>⚡ Formulating search queries across arXiv & Web...</span>`;
+        statusMsg.innerHTML = `<span>Formulating search queries across arXiv and Web...</span>`;
         followupThread.appendChild(statusMsg);
         followupThread.scrollTop = followupThread.scrollHeight;
 
@@ -951,7 +951,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 try {
                     const ev = JSON.parse(e.data);
                     if (ev.type === "deepen_progress" || ev.type === "deepen_start") {
-                        statusMsg.innerHTML = `<span>⚡ ${escapeHtml(ev.message)}</span>`;
+                        statusMsg.innerHTML = `<span>${escapeHtml(ev.message)}</span>`;
                         followupThread.scrollTop = followupThread.scrollHeight;
                     } else if (ev.type === "deepen_complete") {
                         deepenEventSource.close();
@@ -959,8 +959,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         statusMsg.innerHTML = `
                             <div class="chat-msg-header">Deep Dive Complete</div>
                             <div class="chat-msg-content">
-                                <p style="color:var(--success); font-weight:600; margin-bottom:8px;">
-                                    ✅ Appended New Section with ${ev.new_sources_count} New Cited Sources
+                                <p style="color:var(--accent-green); font-weight:600; margin-bottom:8px;">
+                                    Appended New Section with ${ev.new_sources_count} New Cited Sources
                                 </p>
                                 ${marked.parse(ev.addendum)}
                             </div>
@@ -982,7 +982,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         followupInput.focus();
                     } else if (ev.type === "error") {
                         deepenEventSource.close();
-                        statusMsg.innerHTML = `<span style="color:#ef4444">⚠️ ${escapeHtml(ev.message)}</span>`;
+                        statusMsg.innerHTML = `<span style="color:#dc2626">Error: ${escapeHtml(ev.message)}</span>`;
                         followupSendBtn.disabled = false;
                         followupInput.disabled = false;
                     }
@@ -999,7 +999,7 @@ document.addEventListener("DOMContentLoaded", () => {
             };
 
         } catch (err) {
-            statusMsg.innerHTML = `<span style="color:#ef4444">⚠️ Error: ${escapeHtml(err.message)}</span>`;
+            statusMsg.innerHTML = `<span style="color:#dc2626">Error: ${escapeHtml(err.message)}</span>`;
             followupSendBtn.disabled = false;
             followupInput.disabled = false;
         }
@@ -1075,13 +1075,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 const dateStr = item.timestamp ? new Date(item.timestamp).toLocaleString() : "Unknown time";
                 let typeBadge = "";
                 if (item.type === "research") {
-                    typeBadge = '<span style="background: rgba(59,130,246,0.2); color:#60a5fa; padding: 2px 6px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">🔬 Search Topic</span>';
+                    typeBadge = '<span style="background: #eff6ff; color:#1d4ed8; border: 1px solid #bfdbfe; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">Search Topic</span>';
                 } else if (item.type === "followup_qa") {
-                    typeBadge = '<span style="background: rgba(16,185,129,0.2); color:#34d399; padding: 2px 6px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">💬 Question</span>';
+                    typeBadge = '<span style="background: #f0fdf4; color:#15803d; border: 1px solid #bbf7d0; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">Question</span>';
                 } else if (item.type === "deepen") {
-                    typeBadge = '<span style="background: rgba(245,158,11,0.2); color:#fbbf24; padding: 2px 6px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">⚡ Deepen</span>';
+                    typeBadge = '<span style="background: #fffbeb; color:#b45309; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">Deepen</span>';
                 } else {
-                    typeBadge = `<span style="background: rgba(148,163,184,0.2); color:#94a3b8; padding: 2px 6px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">${escapeHtml(item.type || 'query')}</span>`;
+                    typeBadge = `<span style="background: #f1f5f9; color:#475569; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">${escapeHtml(item.type || 'query')}</span>`;
                 }
 
                 row.innerHTML = `

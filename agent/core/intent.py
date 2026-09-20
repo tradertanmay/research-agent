@@ -127,7 +127,7 @@ class IntentAnalyzer:
                 is_researchable=False,
                 is_greeting=True,
                 clarification_message=(
-                    "👋 Hello! I am your **Autonomous Deep Research Agent**.\n\n"
+                    "Hello! I am your **Autonomous Deep Research Agent**.\n\n"
                     "Rather than small talk, I specialize in conducting deep investigations across the Web, "
                     "arXiv preprints, and Wikipedia, then synthesizing cited reports.\n\n"
                     "**To start, what topic would you like me to research?** You can click any topic below:"
