@@ -59,7 +59,11 @@ class ResearchSynthesizer:
             elif "arxiv.org/pdf/" in src.url:
                 pdf_link = f" | [[PDF]]({src.url})"
 
-            lines.append(f"[{idx}] [{src.title}]({src.url}){badge}{pdf_link}{author_str}{date_str}\n   > {clean_snippet}...")
+            if src.source == "user_upload" or src.url.startswith("local://"):
+                badge = " `[LOCAL DOCUMENT]`"
+                lines.append(f"[{idx}] **{src.title}**{badge}{author_str}{date_str}\n   > {clean_snippet}...")
+            else:
+                lines.append(f"[{idx}] [{src.title}]({src.url}){badge}{pdf_link}{author_str}{date_str}\n   > {clean_snippet}...")
         return "\n\n".join(lines)
 
     def clean_and_attach_references(self, content: str, sources: List[SearchResult]) -> str:

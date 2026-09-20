@@ -17,6 +17,7 @@ dependencies = [
     "beautifulsoup4>=4.12.0",
     "rich>=13.7.0",
     "python-multipart>=0.0.9",
+    "pypdf>=5.0.0",
 ]
 
 [project.scripts]

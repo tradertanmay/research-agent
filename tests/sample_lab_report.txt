@@ -1,0 +1,9 @@
+Proprietary Laboratory Benchmark Report: Solid-State Sodium-Ion Battery Cell Testing (2026).
+Research Group: Advanced Energy Storage & Interfacial Chemistry Lab.
+
+Key Findings & Specifications:
+1. Cathode Composition: Na3V2(PO4)3 (NVP) with high rate capability and 115 mAh/g reversible capacity.
+2. Solid Electrolyte: Na3Zr2Si2PO12 (NASICON-type ceramic) demonstrating 1.45 mS/cm bulk ionic conductivity at 25 degrees Celsius.
+3. Interphase Stabilization: Atomic layer deposition (ALD) of 5 nm Al2O3 on sodium metal suppresses dendrite growth up to 3.5 mA/cm2 critical current density.
+4. Degradation Mechanism: In-situ XPS reveals trace NaF formation in the SEI layer prevents continuous electrolyte decomposition.
+5. Cycle Life Performance: Over 1,800 continuous charge-discharge cycles with 89.4% capacity retention at 1C rate.

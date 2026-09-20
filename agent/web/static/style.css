@@ -847,6 +847,11 @@ body {
     color: #15803d; 
     border: 1px solid #bbf7d0; 
 }
+.source-badge.user_upload { 
+    background: #fdf4ff; 
+    color: #a21caf; 
+    border: 1px solid #f0abfc; 
+}
 
 .source-card-title {
     font-weight: 600;
@@ -1398,6 +1403,124 @@ body {
     margin-top: 22px;
     border-top: 1px solid var(--border-color);
     padding-top: 14px;
+}
+
+/* Document Upload Section */
+.document-upload-section {
+    margin-top: 14px;
+    border-top: 1px dashed var(--border-color);
+    padding-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.upload-zone-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.upload-zone-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.upload-browse-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--primary);
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.upload-browse-btn:hover {
+    background: #dbeafe;
+    border-color: #93c5fa;
+}
+
+.upload-dropzone {
+    border: 1.5px dashed var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    text-align: center;
+    background: #fafafa;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.upload-dropzone.dragover {
+    border-color: var(--primary);
+    background: #eff6ff;
+}
+
+.dropzone-tip {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.attached-docs-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.doc-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: var(--text-primary);
+}
+
+.doc-pill-type {
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 0.68rem;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.doc-pill-name {
+    font-weight: 600;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.doc-pill-meta {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.doc-pill-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: bold;
+    padding: 0 2px;
+    line-height: 1;
+}
+
+.doc-pill-remove:hover {
+    color: #ef4444;
 }
 
 .hidden {

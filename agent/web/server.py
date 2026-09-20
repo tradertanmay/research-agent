@@ -4,8 +4,8 @@ import json
 import uuid
 import hashlib
 from pathlib import Path
-from typing import Dict, Any, Optional
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
+from typing import Dict, Any, Optional, List
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -15,6 +15,7 @@ from agent.llm.factory import list_available_models
 from agent.core.research_agent import ResearchAgent
 from agent.core.report_qa import ReportQAEngine
 from agent.storage.vault import vault
+from agent.storage.document_loader import document_loader
 
 app = FastAPI(title="Autonomous Research Agent API", version="1.0.0")
 
@@ -36,6 +37,7 @@ class ResearchRequest(BaseModel):
     depth: str = "standard"  # 'quick', 'standard', 'deep'
     focus: str = "all"        # 'all', 'academic', 'web'
     model_id: Optional[str] = None
+    doc_ids: Optional[List[str]] = None
 
 class QARequest(BaseModel):
     question: str
@@ -267,6 +269,29 @@ async def update_settings_keys(req: SettingsKeysUpdate, request: Request):
     save_api_keys(updates)
     return {"status": "ok", "message": "Settings updated successfully"}
 
+@app.post("/api/upload")
+async def upload_document(file: UploadFile = File(...)):
+    """Upload and parse a local document (PDF, TXT, MD) to be included in research."""
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+    if len(content) > 25 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File size exceeds maximum allowed limit (25MB).")
+
+    try:
+        doc = document_loader.save_and_extract(file.filename, content)
+        return {
+            "doc_id": doc.doc_id,
+            "filename": doc.filename,
+            "file_type": doc.file_type,
+            "size_bytes": doc.size_bytes,
+            "char_count": doc.char_count,
+            "page_count": doc.page_count,
+            "preview": doc.text[:200] if doc.text else "",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to process document: {str(e)}")
+
 @app.post("/api/research")
 async def start_research(req: ResearchRequest, background_tasks: BackgroundTasks, request: Request):
     """Start an autonomous research run in the background."""
@@ -293,6 +318,7 @@ async def start_research(req: ResearchRequest, background_tasks: BackgroundTasks
         depth=req.depth,
         focus=req.focus,
         model_id=chosen_model,
+        doc_ids=req.doc_ids,
         queue=queue,
     )
 
@@ -304,12 +330,13 @@ async def _execute_research_task(
     depth: str,
     focus: str,
     model_id: Optional[str],
+    doc_ids: Optional[List[str]],
     queue: asyncio.Queue,
 ):
     """Run research agent and push events to SSE queue."""
     try:
         agent = ResearchAgent(model_id=model_id)
-        async for event in agent.run_stream(topic=topic, depth=depth, focus=focus):
+        async for event in agent.run_stream(topic=topic, depth=depth, focus=focus, doc_ids=doc_ids):
             await queue.put(event)
     except Exception as e:
         await queue.put({

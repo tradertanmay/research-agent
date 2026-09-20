@@ -14,6 +14,7 @@ from agent.core.planner import ResearchPlanner, ResearchPlan
 from agent.core.synthesizer import ResearchSynthesizer, ResearchReport
 from agent.core.intent import IntentAnalyzer
 from agent.storage.vault import vault
+from agent.storage.document_loader import document_loader
 
 class ResearchAgent:
     """Master Autonomous Research Agent coordinating planning, multi-source search,
@@ -36,10 +37,11 @@ class ResearchAgent:
         topic: str,
         depth: str = "standard",
         focus: str = "all",
+        doc_ids: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """Execute a full research cycle and return the completed report."""
         final_result = None
-        async for event in self.run_stream(topic, depth, focus):
+        async for event in self.run_stream(topic, depth, focus, doc_ids=doc_ids):
             if event.get("type") == "complete":
                 final_result = event.get("data")
         return final_result or {}
@@ -49,9 +51,25 @@ class ResearchAgent:
         topic: str,
         depth: str = "standard",
         focus: str = "all",
+        doc_ids: Optional[List[str]] = None,
     ) -> AsyncIterator[Dict[str, Any]]:
         """Execute research cycle yielding real-time events for SSE / terminal output."""
         task_id = str(uuid.uuid4())[:8]
+
+        # Load attached local documents if provided
+        uploaded_docs = []
+        if doc_ids:
+            uploaded_docs = document_loader.list_documents(doc_ids)
+            if uploaded_docs:
+                yield {
+                    "type": "uploaded_docs_loaded",
+                    "count": len(uploaded_docs),
+                    "docs": [
+                        {"id": d.doc_id, "filename": d.filename, "chars": d.char_count, "pages": d.page_count}
+                        for d in uploaded_docs
+                    ],
+                    "message": f"Attached {len(uploaded_docs)} local document(s) for primary factual grounding.",
+                }
 
         # ----------------------------------------------------
         # 0. QUERY INTENT UNDERSTANDING & SCOPE VALIDATION
@@ -130,6 +148,19 @@ class ResearchAgent:
                     seen_urls.add(item.url)
                     deduped_sources.append(item)
 
+        # Inject uploaded documents as high-priority primary sources
+        if uploaded_docs:
+            uploaded_sources = [
+                SearchResult(
+                    title=f"User Document: {d.filename}",
+                    url=f"local://{d.filename}",
+                    snippet=d.text[:500] if d.text else "[Uploaded Document Content]",
+                    source="user_upload",
+                )
+                for d in uploaded_docs
+            ]
+            deduped_sources = uploaded_sources + deduped_sources
+
         yield {
             "type": "search_complete",
             "phase": "searching",
@@ -149,11 +180,27 @@ class ResearchAgent:
 
         # Target top 6-10 sources for in-depth scraping
         crawl_limit = 5 if depth == "quick" else (10 if depth == "deep" else 7)
-        target_sources = deduped_sources[:crawl_limit]
-        target_urls = [s.url for s in target_sources if not s.url.endswith(".pdf")]
+        web_target_sources = [s for s in deduped_sources if not s.url.startswith("local://")][:crawl_limit]
+        target_urls = [s.url for s in web_target_sources if not s.url.endswith(".pdf")]
 
         crawled_docs: List[CrawledDocument] = await self.crawler.fetch_all(target_urls)
         success_docs = [d for d in crawled_docs if d.success and len(d.text) > 100]
+
+        # Inject uploaded documents directly as read documents for synthesis
+        if uploaded_docs:
+            uploaded_crawled = [
+                CrawledDocument(
+                    url=f"local://{d.filename}",
+                    title=f"User Document: {d.filename}",
+                    text=d.text,
+                    success=True,
+                )
+                for d in uploaded_docs if d.text
+            ]
+            success_docs = uploaded_crawled + success_docs
+
+        # Complete set of sources for synthesis and bibliography citation
+        all_synthesis_sources = (uploaded_sources if uploaded_docs else []) + web_target_sources
 
         yield {
             "type": "reading_complete",
@@ -176,7 +223,7 @@ class ResearchAgent:
             async for chunk in self.synthesizer.synthesize_stream(
                 topic=topic,
                 sub_questions=plan.sub_questions,
-                sources=target_sources,
+                sources=all_synthesis_sources,
                 crawled_docs=success_docs,
             ):
                 accumulated_chunks.append(chunk)
@@ -190,13 +237,13 @@ class ResearchAgent:
             full_report_content = await self.synthesizer.synthesize(
                 topic=topic,
                 sub_questions=plan.sub_questions,
-                sources=target_sources,
+                sources=all_synthesis_sources,
                 crawled_docs=success_docs,
             )
 
         # Ensure genuine clickable references are cleanly attached
         full_report_content = self.synthesizer.clean_and_attach_references(
-            full_report_content, target_sources
+            full_report_content, all_synthesis_sources
         )
 
         # ----------------------------------------------------
@@ -205,7 +252,7 @@ class ResearchAgent:
         saved_record = vault.save_report(
             topic=topic,
             content=full_report_content,
-            sources=[s.to_dict() for s in target_sources],
+            sources=[s.to_dict() for s in all_synthesis_sources],
             model=self.llm.model_name,
             report_id=task_id,
         )
@@ -219,7 +266,7 @@ class ResearchAgent:
                 "report_id": task_id,
                 "topic": topic,
                 "content": full_report_content,
-                "sources": [s.to_dict() for s in target_sources],
+                "sources": [s.to_dict() for s in all_synthesis_sources],
                 "filepath": saved_record["filepath"],
                 "created_at": saved_record["created_at"],
                 "model": self.llm.model_name,

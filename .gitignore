@@ -37,6 +37,8 @@ vault/reports/*
 !vault/reports/.gitkeep
 vault/conversations/*
 !vault/conversations/.gitkeep
+vault/uploads/*
+!vault/uploads/.gitkeep
 vault/history.json
 vault/user_queries.md
 vault/user_queries.json

@@ -211,6 +211,95 @@ document.addEventListener("DOMContentLoaded", () => {
     setupSegmentedControl(depthControl, (val) => currentDepth = val);
     setupSegmentedControl(focusControl, (val) => currentFocus = val);
 
+    // Attached Documents State
+    let attachedDocuments = [];
+    const docFileInput = document.getElementById("docFileInput");
+    const uploadDropzone = document.getElementById("uploadDropzone");
+    const attachedDocsList = document.getElementById("attachedDocsList");
+
+    function renderAttachedDocs() {
+        if (!attachedDocsList) return;
+        attachedDocsList.innerHTML = "";
+        attachedDocuments.forEach((doc, idx) => {
+            const pill = document.createElement("div");
+            pill.className = "doc-pill";
+            const kbSize = Math.round(doc.size_bytes / 1024) || 1;
+            const metaInfo = doc.page_count > 1 ? `${doc.page_count} pgs, ${kbSize} KB` : `${kbSize} KB`;
+            pill.innerHTML = `
+                <span class="doc-pill-type">${escapeHtml(doc.file_type || 'doc')}</span>
+                <span class="doc-pill-name" title="${escapeHtml(doc.filename)}">${escapeHtml(doc.filename)}</span>
+                <span class="doc-pill-meta">(${escapeHtml(metaInfo)})</span>
+                <button type="button" class="doc-pill-remove" data-idx="${idx}" title="Remove document">×</button>
+            `;
+            attachedDocsList.appendChild(pill);
+        });
+
+        attachedDocsList.querySelectorAll(".doc-pill-remove").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const idx = parseInt(e.target.dataset.idx, 10);
+                attachedDocuments.splice(idx, 1);
+                renderAttachedDocs();
+            });
+        });
+    }
+
+    async function uploadSingleFile(file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        try {
+            const res = await authFetch("/api/upload", {
+                method: "POST",
+                body: formData,
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.detail || "Upload failed");
+            }
+            const data = await res.json();
+            attachedDocuments.push(data);
+            renderAttachedDocs();
+        } catch (err) {
+            alert(`Failed to upload ${file.name}: ${err.message}`);
+        }
+    }
+
+    async function handleSelectedFiles(fileList) {
+        if (!fileList || fileList.length === 0) return;
+        for (let i = 0; i < fileList.length; i++) {
+            await uploadSingleFile(fileList[i]);
+        }
+    }
+
+    if (docFileInput) {
+        docFileInput.addEventListener("change", async (e) => {
+            await handleSelectedFiles(e.target.files);
+            docFileInput.value = "";
+        });
+    }
+
+    if (uploadDropzone) {
+        uploadDropzone.addEventListener("click", () => {
+            if (docFileInput) docFileInput.click();
+        });
+
+        uploadDropzone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            uploadDropzone.classList.add("dragover");
+        });
+
+        uploadDropzone.addEventListener("dragleave", () => {
+            uploadDropzone.classList.remove("dragover");
+        });
+
+        uploadDropzone.addEventListener("drop", async (e) => {
+            e.preventDefault();
+            uploadDropzone.classList.remove("dragover");
+            if (e.dataTransfer && e.dataTransfer.files) {
+                await handleSelectedFiles(e.dataTransfer.files);
+            }
+        });
+    }
+
     // Form Submission
     researchForm.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -432,11 +521,17 @@ document.addEventListener("DOMContentLoaded", () => {
         startTimer();
         addLog(`Initiating autonomous research on: "${topic}"`, "info");
 
+        const doc_ids = attachedDocuments.map(d => d.doc_id);
+        if (doc_ids.length > 0) {
+            addLog(`Attached ${doc_ids.length} local document(s) for primary factual grounding`, "info");
+        }
+
         const payload = {
             topic: topic,
             depth: currentDepth,
             focus: currentFocus,
             model_id: modelSelect.value,
+            doc_ids: doc_ids.length > 0 ? doc_ids : undefined,
         };
 
         try {
@@ -488,6 +583,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function handleAgentEvent(event) {
         switch (event.type) {
+            case "uploaded_docs_loaded":
+                addLog(event.message || `Loaded ${event.count} local document(s)`, "info");
+                break;
+
             case "phase_start":
                 setStepActive(event.phase);
                 addLog(event.message, "info");
@@ -587,14 +686,18 @@ document.addEventListener("DOMContentLoaded", () => {
         sources.forEach(s => {
             const card = document.createElement("div");
             card.className = "source-card";
+            const isLocal = s.source === "user_upload" || (s.url && s.url.startsWith("local://"));
+            const titleHtml = isLocal
+                ? `<span style="font-weight:600; color:var(--text-primary);">${escapeHtml(s.title || s.url)}</span>`
+                : `<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(s.title || s.url)}</a>`;
+            const badgeLabel = isLocal ? "Local Doc" : s.source;
+
             card.innerHTML = `
                 <div class="source-card-header">
-                    <span class="source-badge ${escapeHtml(s.source)}">${escapeHtml(s.source)}</span>
+                    <span class="source-badge ${escapeHtml(s.source)}">${escapeHtml(badgeLabel)}</span>
                     <span style="font-size:0.7rem; color:var(--text-muted);">${escapeHtml(s.published_date || '')}</span>
                 </div>
-                <div class="source-card-title">
-                    <a href="${escapeHtml(s.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(s.title || s.url)}</a>
-                </div>
+                <div class="source-card-title">${titleHtml}</div>
                 <div class="source-card-snippet">${escapeHtml(s.snippet || '')}</div>
             `;
             sourcesCardsGrid.appendChild(card);
